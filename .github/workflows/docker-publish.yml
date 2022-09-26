@@ -1,4 +1,4 @@
-name: docker-build
+name: Push Image to GCR
 on:
   push:
     branches:
@@ -8,7 +8,7 @@ on:
     tags:
       - v*
 jobs:
-  push-to-registry:
+  push-image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
