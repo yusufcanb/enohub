@@ -15,6 +15,6 @@ jobs:
       - name: Init submodules
         run: git submodule update --init --recursive
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag ghcr.io/yusufcanb/enohub:${{ github.event.release.name }}
+        run: docker build . --file Dockerfile --tag ghcr.io/yusufcanb/enohub:${{ env.RELEASE_VERSION }}
       - name: Build the Docker image
-        run: docker push ghcr.io/yusufcanb/enohub:${{ github.event.release.name }}
+        run: docker push ghcr.io/yusufcanb/enohub:${{ env.RELEASE_VERSION }}
