@@ -1,0 +1,22 @@
+name: docker-build
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release/**'
+  create:
+    tags:
+      - v*
+jobs:
+  push-to-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and Push Docker Image
+        uses: craftech-io/package-action@v3.1.0
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+          context: .
+          image_name: enohub
+          tags: ${{ steps.vars.outputs.sha_short }}
+          dockerfile: ./Dockerfile
