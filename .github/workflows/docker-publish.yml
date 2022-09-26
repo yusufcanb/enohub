@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Init submodules
+        run: git submodule update --init --recursive
       - name: Build and Push Docker Image
         uses: craftech-io/package-action@v3.1.0
         with:
