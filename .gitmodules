@@ -1,0 +1,3 @@
+[submodule "enocean"]
+	path = enohub/enocean
+	url = https://github.com/kipe/enocean.git
