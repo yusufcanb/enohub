@@ -20,5 +20,5 @@ jobs:
           access_token: ${{ secrets.GITHUB_TOKEN }}
           context: .
           image_name: enohub
-          tags: ${{ steps.vars.outputs.sha_short }}
+          tags: ${{ github.event.release.name }}
           dockerfile: ./Dockerfile
