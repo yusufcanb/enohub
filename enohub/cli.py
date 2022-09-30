@@ -2,8 +2,8 @@ import argparse
 import yaml
 
 from loguru import logger
-from enohub import serial
 from enohub.config import EnoHubConfig
+from enohub.hub import EnOceanHub
 
 
 class YAMLParseAction(argparse.Action):
@@ -56,7 +56,6 @@ class EnOceanHubCLI(argparse.ArgumentParser):
         )
 
     def run(self):
-        logger.info("EnoHub is started.")
         self.add_argument(
             "-c",
             "--config",
@@ -66,4 +65,5 @@ class EnOceanHubCLI(argparse.ArgumentParser):
             help="path of the enohub config file",
         )
         args = self.parse_args()
-        serial.loop(args.config)
+        hub = EnOceanHub(args.config)
+        hub.loop()

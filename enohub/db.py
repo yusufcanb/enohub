@@ -1,10 +1,44 @@
-from influxdb_client import InfluxDBClient
-from influxdb_client.client.write_api import SYNCHRONOUS
+from typing import List
+
+from enocean.protocol.packet import Packet
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS, WriteApi
 
 from enohub.config import EnoHubConfig
 
-def get_database_client(enohub_config: EnoHubConfig):
-    client = InfluxDBClient(url=enohub_config.database.host, token=enohub_config.database.port, org=enohub_config.database.credentials["org"], timeout=120, retries=0)
-    write_api = client.write_api(write_options=SYNCHRONOUS)
-    read_api = client.query_api()
-    return read_api, write_api
+
+class CustomInfluxDBClient(InfluxDBClient):
+    config: EnoHubConfig
+    write_api: WriteApi
+
+    def get_device_given_name(self, sender_hex: str):
+        for device_dict in self.config.devices:
+            if device_dict["id"].lower() == sender_hex.replace(":", "").lower():
+                return device_dict["name"]
+        return sender_hex.replace(":", "").lower()
+
+    def insert_packet(self, packet: Packet):
+        points: List[Point] = []
+        for k in packet.parsed:
+            if not k in ["TMP", "HUM", "ILL"]:
+                continue
+            p = Point(k)
+            p.tag("sensor_group", self.config.name)
+            p.tag("sensor_id", packet.sender_int)
+            p.tag("sensor_name", self.get_device_given_name(packet.sender_hex))
+            p.field("value", packet.parsed[k]["value"])
+            points.append(p)
+        self.write_api.write(bucket=self.config.database.bucket, record=points)
+
+    @classmethod
+    def from_enohub_config(cls, enohub_config: EnoHubConfig):
+        client = CustomInfluxDBClient(
+            url=enohub_config.database.url,
+            token=enohub_config.database.token,
+            org=enohub_config.database.org,
+            timeout=30_000,
+            retries=0,
+        )
+        client.config = enohub_config
+        client.write_api = client.write_api(write_options=SYNCHRONOUS)
+        return client
