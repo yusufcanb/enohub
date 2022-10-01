@@ -1,0 +1,6 @@
+site_name: EnOcean Hub
+repo_url: https://github.com/yusufcanb/enohub.git
+repo_name: Enohub
+
+theme:
+  name: material
