@@ -1,4 +1,0 @@
-## InfluxDB Dashboard
-
-
-## Grafana
