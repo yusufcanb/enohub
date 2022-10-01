@@ -1,4 +1,8 @@
 site_name: EnOcean Hub
+
+docs_dir: markdown/
+site_dir: docs/
+
 repo_url: https://github.com/yusufcanb/enohub.git
 repo_name: Enohub
 
