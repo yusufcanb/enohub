@@ -1,12 +1,11 @@
 import queue
 from loguru import logger
 
-
 from enocean.communicators.serialcommunicator import SerialCommunicator
-from enocean.protocol.constants import PACKET, RORG
+from enocean.protocol.constants import PACKET
 from enocean.protocol.packet import Packet
 
-from .config import EnoHubConfig
+from .config import Device, EnoHubConfig
 from .db import CustomInfluxDBClient
 
 
@@ -21,10 +20,26 @@ class EnOceanHub(SerialCommunicator):
         self.db = CustomInfluxDBClient.from_enohub_config(config)
 
     def is_coming_from_registered_device(self, packet: Packet):
-        for device_dict in self.config.devices:
-            if device_dict["id"].lower() == packet.sender_hex.replace(":", "").lower():
+        for device in self.config.devices:
+            if device.id.lower() == packet.sender_hex.replace(":", "").lower():
                 return True
         return False
+
+    def get_device_by_sender_hex(self, sender_hex: str) -> Device:
+        for device in self.config.devices:
+            if device.id.lower() == sender_hex.replace(":", "").lower():
+                return device
+        raise Exception("Device with given sender id not found")
+
+    def parse_packet_by_config(self, packet: Packet):
+        device = self.get_device_by_sender_hex(packet.sender_hex)
+        _, func, typ = device.eep.split("-")
+        packet.select_eep(int(func, base=16), int(typ, base=16))
+        packet.parse_eep()
+        logger.info(
+            f"Packet parsed [sender_hex={packet.sender_hex}, eep={device.eep.lower()}]"
+        )
+        return packet
 
     def loop(self):
         self.start()
@@ -36,26 +51,19 @@ class EnOceanHub(SerialCommunicator):
                 if not self.is_coming_from_registered_device(packet):
                     logger.info(f"Packet dropped [sender_hex={packet.sender_hex}]")
                     continue
-                if packet.packet_type == PACKET.RADIO_ERP1 and packet.rorg == RORG.VLD:
-                    packet.select_eep(0x14, 0x41)
-                    packet.parse_eep()
-                    for k in packet.parsed:
-                        logger.debug("%s: %s" % (k, packet.parsed[k]))
-                    self.db.insert_packet(packet)
-                if packet.packet_type == PACKET.RADIO_ERP1 and packet.rorg == RORG.BS4:
-                    # parse packet with given FUNC and TYPE
-                    for k in packet.parse_eep(0x02, 0x05):
-                        logger.info("%s: %s" % (k, packet.parsed[k]))
-                if packet.packet_type == PACKET.RADIO_ERP1 and packet.rorg == RORG.BS1:
-                    # alternatively you can select FUNC and TYPE explicitely
-                    packet.select_eep(0x00, 0x01)
-                    # parse it
-                    packet.parse_eep()
-                    for k in packet.parsed:
-                        logger.info("%s: %s" % (k, packet.parsed[k]))
-                if packet.packet_type == PACKET.RADIO_ERP1 and packet.rorg == RORG.RPS:
-                    for k in packet.parse_eep(0x02, 0x02):
-                        logger.info("%s: %s" % (k, packet.parsed[k]))
+
+                if packet.packet_type != PACKET.RADIO_ERP1:
+                    logger.info(
+                        f"Only ERP1 packets are processed [sender_hex={packet.sender_hex}]"
+                    )
+                    continue
+
+                packet = self.parse_packet_by_config(packet)
+                for k in packet.parsed:
+                    logger.debug("%s: %s" % (k, packet.parsed[k]))
+                self.db.insert_packet(packet)
+                logger.info(f"Packet inserted [sender_hex={packet.sender_hex}]")
+
             except queue.Empty:
                 continue
             except KeyboardInterrupt:

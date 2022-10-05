@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Type
+from typing import List
 
 
 class DatabaseConfig(BaseModel):
@@ -8,9 +8,13 @@ class DatabaseConfig(BaseModel):
     token: str
     bucket: str
 
+class Device(BaseModel):
+    id: str
+    name: str
+    eep: str
 
 class EnoHubConfig(BaseModel):
     name: str
     port: str
-    devices: List[dict]
+    devices: List[Device]
     database: DatabaseConfig

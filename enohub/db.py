@@ -12,15 +12,15 @@ class CustomInfluxDBClient(InfluxDBClient):
     write_api: WriteApi
 
     def get_device_given_name(self, sender_hex: str):
-        for device_dict in self.config.devices:
-            if device_dict["id"].lower() == sender_hex.replace(":", "").lower():
-                return device_dict["name"]
+        for device in self.config.devices:
+            if device.id.lower() == sender_hex.replace(":", "").lower():
+                return device.name
         return sender_hex.replace(":", "").lower()
 
     def insert_packet(self, packet: Packet):
         points: List[Point] = []
         for k in packet.parsed:
-            if not k in ["TMP", "HUM", "ILL"]:
+            if not k in ["TMP", "HUM", "ILL", "CO2"]:
                 continue
             p = Point(k)
             p.tag("sensor_group", self.config.name)
