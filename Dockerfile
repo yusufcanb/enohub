@@ -12,4 +12,4 @@ RUN pip3 install poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev
 
-CMD ["python3", "-W", "ignore", "-m", "enohub"]
+CMD ["python3", "-W", "ignore", "-m", "enohub", "-c", "config.yaml"]
