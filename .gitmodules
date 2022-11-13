@@ -1,3 +1,4 @@
 [submodule "enocean"]
 	path = enocean
 	url = https://github.com/yusufcanb/esp3.git
+	branch = master
