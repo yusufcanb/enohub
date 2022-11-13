@@ -4,26 +4,26 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="None">
         
         
-        <link rel="shortcut icon" href="img/favicon.ico">
-        <title>EnOcean Hub</title>
-        <link href="css/bootstrap.min.css" rel="stylesheet">
-        <link href="css/font-awesome.min.css" rel="stylesheet">
-        <link href="css/base.css" rel="stylesheet">
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Grafana - EnOcean Hub</title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/color-brewer.min.css">
 
-        <script src="js/jquery-1.10.2.min.js" defer></script>
-        <script src="js/bootstrap.min.js" defer></script>
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
-    <body class="homepage">
+    <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" href=".">EnOcean Hub</a>
+                <a class="navbar-brand" href="..">EnOcean Hub</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
@@ -33,17 +33,17 @@
                 <div id="navbar-collapse" class="navbar-collapse collapse">
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Overview</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../configuration/" class="nav-link">Configuration</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../installation/" class="nav-link">Installation</a>
+                            </li>
                             <li class="navitem active">
-                                <a href="." class="nav-link">Overview</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="configuration/" class="nav-link">Configuration</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="installation/" class="nav-link">Installation</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="dashboard/" class="nav-link">Grafana</a>
+                                <a href="./" class="nav-link">Grafana</a>
                             </li>
                         </ul>
 
@@ -54,17 +54,17 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" class="nav-link disabled">
+                                <a rel="prev" href="../installation/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="configuration/" class="nav-link">
+                                <a rel="next" class="nav-link disabled">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="https://github.com/yusufcanb/enohub.git/edit/master/docs/index.md" class="nav-link">Edit on Enohub
+                                <a href="https://github.com/yusufcanb/enohub.git/edit/master/docs/dashboard.md" class="nav-link">Edit on Enohub
                                     </a>
                             </li>
                     </ul>
@@ -85,21 +85,13 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#overview" class="nav-link">Overview</a>
+            <li class="nav-item" data-level="1"><a href="#grafana-integration" class="nav-link">Grafana Integration</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#hardware-requirements" class="nav-link">Hardware Requirements</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#software-requirements" class="nav-link">Software Requirements</a>
+            <li class="nav-item" data-level="2"><a href="#add-influxdb-to-grafana" class="nav-link">Add InfluxDB to Grafana</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#external-requirements" class="nav-link">External Requirements</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#quick-start" class="nav-link">Quick Start</a>
+            <li class="nav-item" data-level="2"><a href="#import-dashboard" class="nav-link">Import Dashboard</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -110,55 +102,17 @@
 </div></div>
                     <div class="col-md-9" role="main">
 
-<h1 id="overview">Overview</h1>
-<p>This project aims to act as an device hub which collects sensor data and puts it into InfluxDB Time-Series database for quick visualization. </p>
-<p><img alt="alt" src="images/dashboard.png" /></p>
-<h2 id="hardware-requirements">Hardware Requirements</h2>
-<ul>
-<li>EnOcean STM 550 Multisensor</li>
-<li>EnOcean USB 3000 Radio Receiver</li>
-<li>Raspberry Pi 3+</li>
-</ul>
-<h2 id="software-requirements">Software Requirements</h2>
-<p>On Raspberry Pi you need them to be installed;</p>
-<ul>
-<li>Docker</li>
-<li>Docker Compose</li>
-</ul>
-<h2 id="external-requirements">External Requirements</h2>
-<ul>
-<li>InfluxDB</li>
-<li>Grafana (Optional for Visualization)</li>
-</ul>
-<h2 id="quick-start">Quick Start</h2>
-<p>First, create the config file,</p>
-<pre><code class="language-shell">cat &lt;&lt; EOF &gt; config.yaml
-name: office
-port: /dev/ttyUSB0
-
-devices:
-  - id: 04211ABE
-    name: desk
-    eep: d2-14-41
-
-  - id: 04211945
-    name: table
-    eep: d2-14-41
-
-  - id: 051B0025
-    name: co2-meter
-    eep: a5-09-09
-
-database:
-  url: https://your-influxdb-host:port
-  org: your-org
-  token: your-access-token
-  bucket: your-bucket
-EOF
+<h1 id="grafana-integration">Grafana Integration</h1>
+<p><img alt="alt" src="../images/dashboard.png" /></p>
+<h2 id="add-influxdb-to-grafana">Add InfluxDB to Grafana</h2>
+<p>You can follow the <a href="https://docs.influxdata.com/influxdb/v2.4/tools/grafana/">Official Guide</a> on the InfluxDB's documentation site in order the add your InfluxDB instance to Grafana.</p>
+<h2 id="import-dashboard">Import Dashboard</h2>
+<p>To import a dashboard click <strong>Import</strong> under the <strong>Dashboards</strong> icon in the side menu.</p>
+<p><img alt="import_step1" src="../images/grafana/import.png" /></p>
+<p>Paste the below link into <strong><em>Import via grafana.com</em></strong>,</p>
+<pre><code>https://raw.githubusercontent.com/yusufcanb/enohub/docs/resources/example-dashboard.json
 </code></pre>
-<p>Then, execute docker command below to start EnOcean Hub</p>
-<pre><code>docker run --device=/dev/ttyUSB0 -v &quot;$PWD/config.yaml:/opt/enocean/enohub/config.yaml&quot; ghcr.io/yusufcanb/enohub:latest
-</code></pre></div>
+<p>Finally, click the <strong><em>Load</em></strong> button to import the example dashboard.</p></div>
             </div>
         </div>
 
@@ -167,11 +121,11 @@ EOF
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
-            var base_url = ".",
+            var base_url = "..",
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
-        <script src="js/base.js" defer></script>
-        <script src="search/main.js" defer></script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -236,8 +190,3 @@ EOF
 
     </body>
 </html>
-
-<!--
-MkDocs version : 1.4.0
-Build Date UTC : 2022-11-13 23:05:00.075166+00:00
--->
