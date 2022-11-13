@@ -4,6 +4,11 @@ This project aims to act as an device hub which collects sensor data and puts it
 
 ![dashboard](https://yusufcanb.github.io/enohub/images/dashboard.png)
 
+## Docs
+
+For more detailed documentation please navigate to the link below;
+[https://yusufcanb.github.io/enohub/](https://yusufcanb.github.io/enohub/)
+
 ## Hardware Requirements
 
 - EnOcean STM 550 Multisensor
