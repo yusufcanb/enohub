@@ -4,12 +4,16 @@ port: /dev/ttyUSB0 # Serial port which EnOcean USB 3000 connected.
 devices: # Array of registered devices map. IDs can be found on the backside of every device.
   - id: 04211ABE
     name: sensor-1
+    eep:	d2-14-41
   - id: 04211945
     name: sensor-2
+    eep:	d2-14-41
   - id: 04211AA6
     name: sensor-3
+    eep:	d2-14-41
   - id: 0420FCCD
     name: sensor-4
+    eep:	d2-14-41
 
 database:  # Influx Time-Series database configuration
   url: https://my-influxdb-instance.com  # URL of the influxdb instance
