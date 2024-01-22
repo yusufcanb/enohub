@@ -6,6 +6,7 @@ services:
             context: .
             dockerfile: Dockerfile
         command: tail -f /dev/null
+    
     influxdb:
       image: influxdb:2.6-alpine
       environment:
@@ -19,6 +20,15 @@ services:
         - influxdbv2:/var/lib/influxdb2
       ports:
         - 8086:8086
-
+    
+    grafana:
+      image: grafana/grafana:10.0.10-ubuntu
+      ports:
+        - '3000:3000'
+      volumes:
+        - grafana-storage:/var/lib/grafana
+      environment:
+        - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      restart: on-failure
 volumes:
   influxdbv2:
