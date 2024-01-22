@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+    influxdb:
+      image: influxdb:2.6-alpine
+      environment:
+        - DOCKER_INFLUXDB_INIT_MODE=${DOCKER_INFLUXDB_INIT_MODE}
+        - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+        - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+        - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
+        - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
+        - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+      volumes:
+        - /var/lib/influxdb2:/var/lib/influxdb2:rw
+      ports:
+        - 8086:8086
+    
+    grafana:
+      image: grafana/grafana:10.0.10-ubuntu
+      ports:
+        - '3000:3000'
+      volumes:
+        - /var/lib/grafana:/var/lib/grafana:rw
+      environment:
+        - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      restart: on-failure
