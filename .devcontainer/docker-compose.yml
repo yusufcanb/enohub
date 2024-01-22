@@ -32,3 +32,4 @@ services:
       restart: on-failure
 volumes:
   influxdbv2:
+  grafana-storage:
