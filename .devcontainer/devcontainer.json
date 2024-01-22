@@ -1,0 +1,15 @@
+{
+    "name": "enohub",
+    "dockerComposeFile": "docker-compose.yml",
+    "workspaceFolder": "/workspace",
+    "service": "app",
+    "postCreateCommand": "git clone https://github.com/yusufcanb/enohub.git /workspace",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "explorer.autoReveal": false
+            },
+            "extensions": []
+        }
+    }
+}
