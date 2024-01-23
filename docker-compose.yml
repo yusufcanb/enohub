@@ -11,7 +11,7 @@ services:
         - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
         - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
       volumes:
-        - influxdbv2:/var/lib/influxdb2
+        - /var/lib/influxdb2:/var/lib/influxdb2
       ports:
         - 8086:8086
 
@@ -21,6 +21,8 @@ services:
         - '3000:3000'
       volumes:
         - grafana-storage:/var/lib/grafana
+        - ./compose/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+        - ./compose/grafana/dashboards:/var/lib/grafana/dashboards
       environment:
         - GF_PANELS_DISABLE_SANITIZE_HTML=true
       restart: on-failure
@@ -28,4 +30,3 @@ services:
 volumes:
   influxdbv2:
   grafana-storage:
-
