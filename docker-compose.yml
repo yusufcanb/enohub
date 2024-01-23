@@ -27,6 +27,17 @@ services:
         - GF_PANELS_DISABLE_SANITIZE_HTML=true
       restart: on-failure
 
+    nginx:
+      build:
+        context: .
+        dockerfile: Dockerfile.nginx
+      ports:
+        - '80:80'
+        - '443:443'
+      restart: on-failure
+      depends_on:
+        - grafana
+        - influxdb
+
 volumes:
-  influxdbv2:
   grafana-storage:

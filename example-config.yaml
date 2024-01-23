@@ -12,8 +12,8 @@ devices: # Array of registered devices map. IDs can be found on the backside of 
     name: sensor-3
     eep:	d2-14-41
   - id: 0420FCCD
-    name: sensor-4
-    eep:	d2-14-41
+    name: co2
+    eep:	a5-09-09
 
 database:  # Influx Time-Series database configuration
   url: https://my-influxdb-instance.com  # URL of the influxdb instance
