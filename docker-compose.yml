@@ -28,7 +28,7 @@ services:
       restart: on-failure
 
     enohub:
-      image: ghcr.io/yusufcanb/enohub:0.3.0
+      image: ghcr.io/yusufcanb/enohub:0.3.1
       volumes:
         - ./config.yaml:/opt/enocean/enohub/config.yaml
       devices:
@@ -38,7 +38,7 @@ services:
         - influxdb
 
     nginx:
-      image: ghcr.io/yusufcanb/enohub-proxy:0.3.0
+      image: ghcr.io/yusufcanb/enohub-proxy:0.3.1
       ports:
         - '80:80'
         - '443:443'
