@@ -1,5 +1,8 @@
 FROM python:3.8
 
+LABEL org.opencontainers.image.source=https://github.com/yusufcanb/enohub
+LABEL org.opencontainers.image.description="EnOcean Sensor Hub. Listens ESP3 packets from EnOcean USB 3000 usb stick and pipes into InfluxDB time-series database."
+
 WORKDIR /opt/enocean/enohub
 
 COPY . .
