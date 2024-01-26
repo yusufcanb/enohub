@@ -7,14 +7,13 @@ on:
     branches: [ "master" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Init submodules
       run: git submodule update --init --recursive
-    - name: Build the Docker image
+    - name: Build the Enohub Docker image
+      run: docker build . --file Dockerfile --tag enohub:$(date +%s)
+    - name: Build the Enohub Proxy image
       run: docker build . --file Dockerfile --tag enohub:$(date +%s)

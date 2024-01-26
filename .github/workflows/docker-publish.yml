@@ -22,3 +22,5 @@ jobs:
         run: docker buildx create --use
       - name: Build enohub Docker image
         run: docker buildx build --platform linux/amd64,linux/arm64 --file Dockerfile --tag ghcr.io/yusufcanb/enohub:${{ env.RELEASE_VERSION }} --push .
+      - name: Build Nginx Proxy Image
+        run: docker buildx build --platform linux/amd64,linux/arm64 --file Dockerfile.nginx --tag ghcr.io/yusufcanb/enohub-proxy:${{ env.RELEASE_VERSION }} --push .
