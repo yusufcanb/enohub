@@ -29,12 +29,13 @@ services:
 
     enohub:
       image: ghcr.io/yusufcanb/enohub:0.3.0
-      ports:
-        - '80:80'
-        - '443:443'
+      volumes:
+        - ./config.yaml:/opt/enocean/enohub/config.yaml
+      devices:
+        - /dev/ttyUSB0
       restart: on-failure
       depends_on:
-        - influxdb   
+        - influxdb
 
     nginx:
       image: ghcr.io/yusufcanb/enohub-proxy:0.3.0
