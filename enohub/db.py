@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from enocean.protocol.packet import Packet
 from influxdb_client import InfluxDBClient, Point
@@ -17,10 +17,16 @@ class CustomInfluxDBClient(InfluxDBClient):
                 return device.name
         return sender_hex.replace(":", "").lower()
 
+    def get_device_config_by_sender_hex(self, sender_hex: str) -> Optional[dict]:
+        for device in self.config.devices:
+            if device.id.lower() == sender_hex.replace(":", "").lower():
+                return device
+        return None
+
     def insert_packet(self, packet: Packet):
         points: List[Point] = []
         for k in packet.parsed:
-            if not k in ["TMP", "HUM", "ILL", "CO2"]:
+            if not k in ["TMP", "HUM", "ILL", "CO2", "ACC", "ACX", "ACY", "ACZ", "CO"]:
                 continue
             p = Point(k)
             p.tag("sensor_group", self.config.name)
