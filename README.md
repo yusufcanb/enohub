@@ -28,14 +28,14 @@ Then, create the config file with the sensor ids you have ,
 
 ```shell
 cat << EOF > config.yaml
-name: office
 port: /dev/ttyUSB0
 
 devices:
   - id: 04211ABE
     name: stm-550
     eep: d2-14-41
-      
+    group: office
+
 database:
   url: https://your-influxdb-host:port
   org: your-org

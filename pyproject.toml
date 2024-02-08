@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "enohub"
-version = "0.1.0"
+version = "0.4.0"
 description = "EnOcean Sensor Hub. Listens ESP3 packets from EnOcean USB 3000 device and pipes into InfluxDB time-series database."
 authors = ["Yusuf Can Bayrak <yusuf.bayrak@enocean.com>"]
 readme = "README.md"

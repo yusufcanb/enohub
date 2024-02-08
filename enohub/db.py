@@ -11,6 +11,12 @@ class CustomInfluxDBClient(InfluxDBClient):
     config: EnoHubConfig
     write_api: WriteApi
 
+    def get_device_group(self, sender_hex: str) -> str:
+        device_config = self.get_device_config_by_sender_hex(sender_hex)
+        if device_config.group:
+            return device_config.group
+        return "default"
+
     def get_device_given_name(self, sender_hex: str):
         for device in self.config.devices:
             if device.id.lower() == sender_hex.replace(":", "").lower():
@@ -29,7 +35,7 @@ class CustomInfluxDBClient(InfluxDBClient):
             if not k in ["TMP", "HUM", "ILL", "CO2", "ACC", "ACX", "ACY", "ACZ", "CO"]:
                 continue
             p = Point(k)
-            p.tag("sensor_group", self.config.name)
+            p.tag("sensor_group", self.get_device_group(packet.sender_hex))
             p.tag("sensor_id", packet.sender_int)
             p.tag("sensor_name", self.get_device_given_name(packet.sender_hex))
             p.field("value", packet.parsed[k]["value"])
