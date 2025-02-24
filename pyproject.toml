@@ -1,17 +1,18 @@
 [tool.poetry]
 name = "enohub"
 version = "0.4.0"
-description = "EnOcean Sensor Hub. Listens ESP3 packets from EnOcean USB 3000 device and pipes into InfluxDB time-series database."
+description = "EnOcean Sensor Hub. Listens ESP3 packets from EnOcean USB 3000 device and pipes into TimescaleDB."
 authors = ["Yusuf Can Bayrak <yusuf.bayrak@enocean.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 influxdb-client = {extras = ["ciso"], version = "^1.32.0"}
 enocean = {path = "enocean"}
 loguru = "^0.6.0"
 pydantic = "^1.10.2"
 PyYAML = "^6.0"
+psycopg2-binary = "^2.9.10"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"

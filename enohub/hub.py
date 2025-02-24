@@ -6,18 +6,18 @@ from enocean.protocol.constants import PACKET
 from enocean.protocol.packet import Packet
 
 from .config import Device, EnoHubConfig
-from .db import CustomInfluxDBClient
+from .db import TimescaleDBClient
 
 
 class EnOceanHub(SerialCommunicator):
 
-    db: CustomInfluxDBClient
+    db: TimescaleDBClient
     config: EnoHubConfig
 
     def __init__(self, config: EnoHubConfig):
         super().__init__(config.port, callback=None)
         self.config = config
-        self.db = CustomInfluxDBClient.from_enohub_config(config)
+        self.db = TimescaleDBClient.from_enohub_config(config)
 
     def is_coming_from_registered_device(self, packet: Packet):
         for device in self.config.devices:

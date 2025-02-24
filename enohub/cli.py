@@ -29,7 +29,7 @@ class EnOceanHubCLI(argparse.ArgumentParser):
         self,
         prog="enohub",
         usage=None,
-        description="EnOcean Sensor Hub. Listens ESP3 packets from EnOcean USB 3000 device and pipes into InfluxDB time-series database.",
+        description="EnOcean Sensor Hub. Listens ESP3 packets from EnOcean USB 3000 device and pipes into TimescaleDB time-series database.",
         epilog=None,
         parents=[],
         formatter_class=argparse.HelpFormatter,
