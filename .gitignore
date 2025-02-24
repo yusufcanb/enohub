@@ -5,6 +5,8 @@
 **/*.pyc
 
 config.yaml
+config.yml
 .config.yaml
+.config.yml
 
 .env

@@ -1,51 +1,55 @@
-version: '3'
+version: "3"
 
 services:
-    influxdb:
-      image: influxdb:2.7-alpine
-      environment:
-        - DOCKER_INFLUXDB_INIT_MODE=setup
-        - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
-        - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
-        - DOCKER_INFLUXDB_INIT_ORG=${DOCKER_INFLUXDB_INIT_ORG}
-        - DOCKER_INFLUXDB_INIT_BUCKET=${DOCKER_INFLUXDB_INIT_BUCKET}
-        - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
-      volumes:
-        - /var/lib/influxdb2:/var/lib/influxdb2
-      ports:
-        - 8086:8086
+  timescaledb:
+    image: timescale/timescaledb-ha:pg17
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=enohub
+      - POSTGRES_USER=enohub
+      - POSTGRES_PASSWORD=enohub
+    volumes:
+      - timescaledb_data:/home/postgres/pgdata/data
+      - ./compose/timescaledb/init.sql:/docker-entrypoint-initdb.d/init.sql
+  grafana:
+    image: grafana/grafana:11.5.2
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./compose/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./compose/grafana/dashboards:/var/lib/grafana/dashboards
+    environment:
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+    restart: on-failure
 
-    grafana:
-      image: grafana/grafana:10.0.10-ubuntu
-      ports:
-        - '3000:3000'
-      volumes:
-        - grafana-storage:/var/lib/grafana
-        - ./compose/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
-        - ./compose/grafana/dashboards:/var/lib/grafana/dashboards
-      environment:
-        - GF_PANELS_DISABLE_SANITIZE_HTML=true
-      restart: on-failure
+  enohub:
+    image: ghcr.io/yusufcanb/enohub:0.3.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./config.yaml:/opt/enocean/enohub/config.yaml
+    devices:
+      - /dev/ttyUSB0
+    restart: on-failure
+    depends_on:
+      - influxdb
 
-    enohub:
-      image: ghcr.io/yusufcanb/enohub:0.3.1
-      volumes:
-        - ./config.yaml:/opt/enocean/enohub/config.yaml
-      devices:
-        - /dev/ttyUSB0
-      restart: on-failure
-      depends_on:
-        - influxdb
-
-    nginx:
-      image: ghcr.io/yusufcanb/enohub-proxy:0.3.1
-      ports:
-        - '80:80'
-        - '443:443'
-      restart: on-failure
-      depends_on:
-        - grafana
-        - influxdb
+  nginx:
+    image: ghcr.io/yusufcanb/enohub-proxy:0.3.1
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: on-failure
+    depends_on:
+      - grafana
+      - timescaledb
 
 volumes:
+  timescaledb_data:
   grafana-storage:
