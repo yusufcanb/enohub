@@ -21,10 +21,10 @@
       }
     ]
   },
-  "editable": false,
+  "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -37,43 +37,43 @@
       },
       "id": 25,
       "panels": [],
-      "title": "Sensor Group",
+      "repeat": "device_group",
+      "title": "${device_group}",
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
+      "datasource": "grafana-postgresql-datasource",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "max": 40,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "purple",
+                "color": "text",
                 "value": null
               }
             ]
           },
-          "unit": "humidity"
+          "unit": "celsius"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 4,
+        "h": 5,
+        "w": 6,
         "x": 0,
         "y": 1
       },
-      "id": 2,
+      "id": 6,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
-        "percentChangeColorMode": "standard",
+        "percentChangeColorMode": "same_as_value",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -81,7 +81,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false,
+        "showPercentChange": true,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -94,9 +94,9 @@
           },
           "editorMode": "code",
           "format": "table",
-          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"HUM\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n  ",
+          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"TMP\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
+          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts::bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) AS value\r\nFROM ts_kv\r\nWHERE\r\n  key = 'tmp'\r\n  AND ts >= EXTRACT(EPOCH FROM NOW() - INTERVAL '1 hour') * 1000\r\n  AND ts < EXTRACT(EPOCH FROM NOW()) * 1000\r\n  AND device_group = '${device_group}'\r\nGROUP BY time\r\nORDER BY time\r\nLIMIT 25;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -117,20 +117,387 @@
           }
         }
       ],
-      "title": "Humidity (Mean)",
+      "timeFrom": "1h",
+      "title": "TMP",
       "transparent": true,
       "type": "stat"
     },
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
+      "datasource": "grafana-postgresql-datasource",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "humidity"
+        },
+        "overrides": []
       },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "same_as_value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"HUM\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n  ",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts::bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) AS value\r\nFROM ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= EXTRACT(EPOCH FROM NOW() - INTERVAL '1 hour') * 1000\r\n  AND ts < EXTRACT(EPOCH FROM NOW()) * 1000\r\n  AND device_group = '${device_group}'\r\nGROUP BY time\r\nORDER BY time\r\nLIMIT 25;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "timeFrom": "1h",
+      "title": "HUM",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": "grafana-postgresql-datasource",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "lux"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "same_as_value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ILL\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts::bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) AS value\r\nFROM ts_kv\r\nWHERE\r\n  key = 'ill'\r\n  AND ts >= EXTRACT(EPOCH FROM NOW() - INTERVAL '1 hour') * 1000\r\n  AND ts < EXTRACT(EPOCH FROM NOW()) * 1000\r\n  AND device_group = '${device_group}'\r\nGROUP BY time\r\nORDER BY time\r\nLIMIT 25;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "timeFrom": "1h",
+      "title": "ILL",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": "grafana-postgresql-datasource",
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ppm"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 22,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "same_as_value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"CO2\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'co2'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\n  AND device_group = '${device_group}'\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "timeFrom": "1h",
+      "title": "CO2",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": "grafana-postgresql-datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "purple",
+            "fixedColor": "text",
             "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 72,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 1,
+          "fieldMinMax": false,
+          "mappings": [],
+          "max": 35,
+          "min": 12,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 22
+              },
+              {
+                "color": "red",
+                "value": 25
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "id": 7,
+      "maxDataPoints": 100,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"TMP\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'tmp'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\n  AND device_group = '${device_group}'\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "TMP (Timeline)",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": "grafana-postgresql-datasource",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed",
+            "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
@@ -150,7 +517,7 @@
             },
             "insertNulls": false,
             "lineInterpolation": "smooth",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -162,20 +529,26 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "dashed"
             }
           },
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
-            "mode": "percentage",
+            "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "text",
                 "value": null
               },
               {
+                "color": "blue",
+                "value": 25
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 60
               }
             ]
           },
@@ -184,12 +557,13 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
+        "h": 9,
         "w": 12,
-        "x": 4,
-        "y": 1
+        "x": 12,
+        "y": 6
       },
       "id": 10,
+      "maxDataPoints": 100,
       "options": {
         "legend": {
           "calcs": [],
@@ -214,7 +588,7 @@
           "format": "table",
           "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"HUM\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
+          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\n  AND device_group = '${device_group}'\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -240,497 +614,12 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "light-purple",
-            "mode": "fixed"
-          },
-          "decimals": 1,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "humidity"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 1
-      },
-      "id": 12,
-      "options": {
-        "displayMode": "lcd",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
-        "orientation": "vertical",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "text": {},
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"HUM\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_group\", \"sensor_id\", \"_field\"])\r\n  |> aggregateWindow(every: 5s, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket(\r\n    '${__interval}',\r\n    to_timestamp(ts :: bigint / 1000)\r\n  ) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Sensor Distrubution (Latest)",
-      "transparent": true,
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "max": 40,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 4,
-        "x": 0,
-        "y": 8
-      },
-      "id": 6,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"TMP\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'tmp'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Temperture (Mean)",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "blue",
-            "mode": "fixed"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 75,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 1,
-          "mappings": [],
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 4,
-        "y": 8
-      },
-      "id": 7,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"TMP\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket(\r\n    '${__interval}',\r\n    to_timestamp(ts :: bigint / 1000)\r\n  ) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Temperture (Timeline)",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "blue",
-            "mode": "fixed"
-          },
-          "decimals": 1,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 8
-      },
-      "id": 13,
-      "options": {
-        "displayMode": "lcd",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
-        "orientation": "vertical",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "text": {},
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"TMP\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_group\", \"sensor_id\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket(\r\n    '${__interval}',\r\n    to_timestamp(ts :: bigint / 1000)\r\n  ) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Sensor Distrubution (Latest)",
-      "transparent": true,
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "yellow",
-                "value": null
-              }
-            ]
-          },
-          "unit": "lux"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 4,
-        "x": 0,
-        "y": 15
-      },
-      "id": 8,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ILL\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket(\r\n    '${__interval}',\r\n    to_timestamp(ts :: bigint / 1000)\r\n  ) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Illumination (Mean)",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
+      "datasource": "grafana-postgresql-datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
             "fixedColor": "light-yellow",
-            "mode": "fixed"
+            "mode": "thresholds"
           },
           "custom": {
             "axisBorderShow": false,
@@ -750,7 +639,7 @@
             },
             "insertNulls": false,
             "lineInterpolation": "smooth",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -766,16 +655,14 @@
             }
           },
           "mappings": [],
+          "max": 1000,
+          "min": 0,
           "thresholds": {
             "mode": "percentage",
             "steps": [
               {
-                "color": "green",
+                "color": "text",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
@@ -786,10 +673,11 @@
       "gridPos": {
         "h": 7,
         "w": 12,
-        "x": 4,
+        "x": 0,
         "y": 15
       },
       "id": 9,
+      "maxDataPoints": 100,
       "options": {
         "legend": {
           "calcs": [],
@@ -814,7 +702,7 @@
           "format": "table",
           "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ILL\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket(\r\n    '${__interval}',\r\n    to_timestamp(ts :: bigint / 1000)\r\n  ) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
+          "rawSql": "SELECT\r\n  time_bucket(\r\n    '${__interval}',\r\n    to_timestamp(ts :: bigint / 1000)\r\n  ) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'ill'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\n  AND device_group = '${device_group}'\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -840,194 +728,11 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
-      "description": "",
+      "datasource": "grafana-postgresql-datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "light-yellow",
-            "mode": "fixed"
-          },
-          "decimals": 1,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "lux"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 15
-      },
-      "id": 14,
-      "options": {
-        "displayMode": "lcd",
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "maxVizHeight": 300,
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "namePlacement": "auto",
-        "orientation": "vertical",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "text": {},
-        "valueMode": "color"
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"ILL\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_group\", \"sensor_id\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket(\r\n    '${__interval}',\r\n    to_timestamp(ts :: bigint / 1000)\r\n  ) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'hum'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Sensor Distrubution (Latest)",
-      "transparent": true,
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "ppm"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 4,
-        "x": 0,
-        "y": 22
-      },
-      "id": 22,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "a800bf2c-cc74-4fab-ac10-84e3fb6c997e"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"CO2\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
-          "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'co2'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "CO2 (Mean)",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "cee1kfry577r4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "green",
+            "fixedColor": "text",
             "mode": "fixed"
           },
           "custom": {
@@ -1048,7 +753,7 @@
             },
             "insertNulls": false,
             "lineInterpolation": "smooth",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -1060,10 +765,12 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "dashed"
             }
           },
           "mappings": [],
+          "max": 2000,
+          "min": 500,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1072,12 +779,8 @@
                 "value": null
               },
               {
-                "color": "light-yellow",
+                "color": "blue",
                 "value": 1000
-              },
-              {
-                "color": "dark-yellow",
-                "value": 1250
               },
               {
                 "color": "red",
@@ -1090,10 +793,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 20,
-        "x": 4,
-        "y": 22
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 15
       },
       "id": 17,
       "options": {
@@ -1120,7 +823,7 @@
           "format": "table",
           "query": "from(bucket: \"${bucket}\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"CO2\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"value\")\r\n  |> filter(fn: (r) => r[\"sensor_group\"] == \"${sensor_group}\")\r\n  |> drop(columns: [\"sensor_id\", \"sensor_name\", \"_field\"])\r\n  |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
           "rawQuery": true,
-          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'co2'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
+          "rawSql": "SELECT\r\n  time_bucket('${__interval}', to_timestamp(ts :: bigint / 1000)) AS time,\r\n  avg(COALESCE(long_v, dbl_v)) as value\r\nFROM\r\n  ts_kv\r\nWHERE\r\n  key = 'co2'\r\n  AND ts >= ${__from}\r\n  AND ts < ${__to}\r\n  AND device_group = '${device_group}'\r\nGROUP BY\r\n  time\r\nORDER BY\r\n  time;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -1147,41 +850,50 @@
     }
   ],
   "preload": false,
-  "refresh": "",
+  "refresh": "5s",
   "schemaVersion": 40,
   "tags": [],
   "templating": {
     "list": [
       {
+        "allowCustomValue": false,
         "current": {
           "text": "office",
           "value": "office"
         },
         "definition": "SELECT DISTINCT(device_group) FROM ts_kv_latest;",
+        "includeAll": false,
+        "label": "Device Group",
         "name": "device_group",
         "options": [],
         "query": "SELECT DISTINCT(device_group) FROM ts_kv_latest;",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "",
         "type": "query"
       },
       {
+        "allowCustomValue": false,
         "current": {
-          "text": "office",
-          "value": "office"
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
         },
-        "definition": "SELECT DISTINCT(device_name) FROM ts_kv_latest;",
+        "definition": "SELECT DISTINCT(device_name) FROM ts_kv_latest WHERE device_group = ANY(ARRAY[${device_group}]);",
+        "hide": 2,
+        "includeAll": true,
+        "multi": true,
         "name": "device_name",
         "options": [],
-        "query": "SELECT DISTINCT(device_name) FROM ts_kv_latest;",
-        "refresh": 1,
+        "query": "SELECT DISTINCT(device_name) FROM ts_kv_latest WHERE device_group = ANY(ARRAY[${device_group}]);",
+        "refresh": 2,
         "regex": "",
         "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -1197,8 +909,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "Home Monitor 2",
-  "uid": "WMK5eaMVk2",
-  "version": 16,
+  "title": "Enohub Default Dashboard",
+  "uid": "dee4kcfkiraiod",
+  "version": 74,
   "weekStart": ""
 }

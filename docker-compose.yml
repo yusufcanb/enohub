@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   timescaledb:
     image: timescale/timescaledb-ha:pg17
@@ -18,8 +16,9 @@ services:
       - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
-      - ./compose/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
       - ./compose/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./compose/grafana/provisioning:/etc/grafana/provisioning
+      # - ./compose/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
     environment:
       - GF_PANELS_DISABLE_SANITIZE_HTML=true
     restart: on-failure
@@ -30,12 +29,12 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./config.yaml:/opt/enocean/enohub/config.yaml
+      - ./config.yml:/opt/enocean/enohub/config.yml
     devices:
       - /dev/ttyUSB0
     restart: on-failure
     depends_on:
-      - influxdb
+      - timescaledb
 
   nginx:
     image: ghcr.io/yusufcanb/enohub-proxy:0.3.1

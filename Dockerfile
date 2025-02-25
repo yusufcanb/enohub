@@ -21,4 +21,4 @@ ENV PATH="/opt/enocean/enohub/.venv/bin:$PATH"
 
 COPY --from=builder /opt/enocean/enohub /opt/enocean/enohub
 
-CMD ["python3", "-W", "ignore", "-m", "enohub", "-c", "config.yaml"]
+CMD ["python3", "-W", "ignore", "-m", "enohub", "-c", "config.yml"]
